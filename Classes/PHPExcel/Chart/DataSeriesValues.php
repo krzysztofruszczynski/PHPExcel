@@ -86,10 +86,17 @@ class PHPExcel_Chart_DataSeriesValues
 	 */
 	private $_dataValues = array();
 
+        /**
+         * Color of data series
+         * 
+         * @var array|string 
+         */
+        private $_fillColor;
+        
 	/**
 	 * Create a new PHPExcel_Chart_DataSeriesValues object
 	 */
-	public function __construct($dataType = self::DATASERIES_TYPE_NUMBER, $dataSource = null, $formatCode = null, $pointCount = 0, $dataValues = array(), $marker = null)
+	public function __construct($dataType = self::DATASERIES_TYPE_NUMBER, $dataSource = null, $formatCode = null, $pointCount = 0, $dataValues = array(), $marker = null, $fillColor = null)
 	{
 		$this->setDataType($dataType);
 		$this->_dataSource = $dataSource;
@@ -97,8 +104,31 @@ class PHPExcel_Chart_DataSeriesValues
 		$this->_pointCount = $pointCount;
 		$this->_dataValues = $dataValues;
 		$this->_marker = $marker;
+                $this->_fillColor = $fillColor;
 	}
 
+        /**
+         * Set fill color
+         * 
+         * @param array|string $fillColor color or array with colors are subsequent values (for graphs like chart pie)
+         * @return PHPExcel_Chart_DataSeriesValues
+         */
+        public function setFillColor( $fillColor )
+        {
+            $this->_fillColor = $fillColor;
+            return $this;
+        }
+        
+        /**
+         * Getter for fill color
+         * 
+         * @return string|array
+         */
+        public function getFillColor()
+        {
+            return $this->_fillColor;
+        }
+        
 	/**
 	 * Get Series Data Type
 	 *

@@ -1141,10 +1141,23 @@ class PHPExcel_Writer_Excel2007_Chart extends
         }
       }
     }
-
+    
     foreach ($plotSeriesOrder as $plotSeriesIdx => $plotSeriesRef) {
+      $plotSeriesValues = $plotGroup->getPlotValuesByIndex($plotSeriesRef);
+      $fillColor = $plotSeriesValues->getFillColor();
+      
       $objWriter->startElement('c:ser');
 
+      if ( !is_null($fillColor) && !is_array($fillColor)){  // one color only
+          $objWriter->startElement('c:spPr');
+          $objWriter->startElement('a:solidFill');
+          $objWriter->startElement('a:srgbClr');
+          $objWriter->writeAttribute('val', $fillColor);
+          $objWriter->endElement();
+          $objWriter->endElement();
+          $objWriter->endElement();
+      }
+      
       $objWriter->startElement('c:idx');
       $objWriter->writeAttribute('val', $this->_seriesIndex + $plotSeriesIdx);
       $objWriter->endElement();
@@ -1158,23 +1171,47 @@ class PHPExcel_Writer_Excel2007_Chart extends
           ($groupType == PHPExcel_Chart_DataSeries::TYPE_DONUTCHART)
       ) {
 
-        $objWriter->startElement('c:dPt');
-        $objWriter->startElement('c:idx');
-        $objWriter->writeAttribute('val', 3);
-        $objWriter->endElement();
+        if (!is_null($fillColor) && is_array($fillColor)) { // colors are set
+            foreach( $plotSeriesValues->getDataValues() as $dataKey => $dataValue ) {
+                if ( isset($fillColor[$dataKey]) ) {
+                    $objWriter->startElement('c:dPt');
+                    $objWriter->startElement('c:idx');
+                    $objWriter->writeAttribute('val', $dataKey);
+                    $objWriter->endElement();
 
-        $objWriter->startElement('c:bubble3D');
-        $objWriter->writeAttribute('val', 0);
-        $objWriter->endElement();
+                    $objWriter->startElement('c:bubble3D');
+                    $objWriter->writeAttribute('val', 0);
+                    $objWriter->endElement();
 
-        $objWriter->startElement('c:spPr');
-        $objWriter->startElement('a:solidFill');
-        $objWriter->startElement('a:srgbClr');
-        $objWriter->writeAttribute('val', 'FF9900');
-        $objWriter->endElement();
-        $objWriter->endElement();
-        $objWriter->endElement();
-        $objWriter->endElement();
+                    $objWriter->startElement('c:spPr');
+                    $objWriter->startElement('a:solidFill');
+                    $objWriter->startElement('a:srgbClr');
+                    $objWriter->writeAttribute('val', $fillColor[$dataKey]);
+                    $objWriter->endElement();
+                    $objWriter->endElement();
+                    $objWriter->endElement();
+                    $objWriter->endElement();
+                }                
+            }  
+        } else {
+            $objWriter->startElement('c:dPt');
+            $objWriter->startElement('c:idx');
+            $objWriter->writeAttribute('val', 3);
+            $objWriter->endElement();
+
+            $objWriter->startElement('c:bubble3D');
+            $objWriter->writeAttribute('val', 0);
+            $objWriter->endElement();
+
+            $objWriter->startElement('c:spPr');
+            $objWriter->startElement('a:solidFill');
+            $objWriter->startElement('a:srgbClr');
+            $objWriter->writeAttribute('val', 'FF9900');
+            $objWriter->endElement();
+            $objWriter->endElement();
+            $objWriter->endElement();
+            $objWriter->endElement();
+        }         
       }
 
       //	Labels
@@ -1202,7 +1239,6 @@ class PHPExcel_Writer_Excel2007_Chart extends
         $objWriter->endElement();
       }
 
-      $plotSeriesValues = $plotGroup->getPlotValuesByIndex($plotSeriesRef);
       if ($plotSeriesValues) {
         $plotSeriesMarker = $plotSeriesValues->getPointMarker();
         if ($plotSeriesMarker) {
